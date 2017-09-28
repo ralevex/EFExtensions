@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net452;net46</TargetFrameworks>
+    <Authors>Alex Zarenin, Anatoliy Belugin</Authors>
+    <Company>Ralevex LTD.</Company>
+    <Description>Test project for EF Extentions</Description>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
+    <Version>1.1.0</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RootNamespace>Ralevex.EF</RootNamespace>
+    <AssemblyName>Ralevex.EF.Test</AssemblyName>
+    <ApplicationIcon />
+    <OutputType>Exe</OutputType>
+    <StartupObject />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml" />
+    <PackageReference Include="EntityFramework" Version="6.1.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EntityFrameworkExtensions\EntityFrameworkExt.csproj" />
+  </ItemGroup>
+
+</Project>

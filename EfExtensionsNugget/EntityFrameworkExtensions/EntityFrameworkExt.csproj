@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?><Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net45;net46</TargetFrameworks>
+    <TargetFrameworks>net452;net46</TargetFrameworks>
     <Authors>Alex Zarenin, Anatoliy Belugin</Authors>
     <Company>Ralevex LTD.</Company>
     <Description>EF Extentions to provide Update for complex queries</Description>
@@ -24,7 +24,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
     <PackageReference Include="EntityFramework" Version="6.1.3" />
   </ItemGroup>
 

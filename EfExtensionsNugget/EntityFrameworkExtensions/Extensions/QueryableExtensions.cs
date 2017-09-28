@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Core.Objects;
+using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
@@ -26,7 +27,7 @@ namespace Ralevex.EF.Extensions
             List<PropertyInfo> fieldListInfo = parameters.GetType().GetProperties().ToList();
 
             //retrieve non key columns from Entity class
-            List<MemberInfo> updatableColumns = ReflectionFunctions.GetNonKeyColumnsForType(queryable.ElementType)
+            List<MemberInfo> updatableColumns = queryable.ElementType.GetNonKeyColumnsForType()
                                                 .Where(p => fieldListInfo
                                                             .Any(pi => pi.Name.Equals(p.Name, StringComparison.OrdinalIgnoreCase))
                                                       )
@@ -50,27 +51,28 @@ namespace Ralevex.EF.Extensions
             queryBuilder.AppendLine(") ");
             queryBuilder.Append("UPDATE Base ");
 
-            foreach (MemberInfo oneColumn in updatableColumns)
-                {
-                var columnAttribute = oneColumn.GetCustomAttribute<ColumnAttribute>();
-                string fieldName = columnAttribute?.Name ?? oneColumn.Name;
+            foreach (string fieldName in updatableColumns.Select(mi => (mi.GetCustomAttribute<ColumnAttribute>()?.Name) ?? mi.Name))
                 queryBuilder.AppendLine($"SET Base.{fieldName} = @{fieldName}");
-                }
 
             queryBuilder.AppendLine($"FROM {tableName} Base ");
             queryBuilder.AppendLine("INNER JOIN Query ");
 
             var preffix = "ON";
-            foreach (MemberInfo oneFieldType in ReflectionFunctions.GetKeyColumnsForType(queryable.ElementType))
-                {
-                var columnAttribute = oneFieldType.GetCustomAttribute<ColumnAttribute>();
-                string fieldName    = columnAttribute?.Name ?? oneFieldType.Name;
+            foreach (string fieldName in elementType.GetKeyColumnsForType()
+                .Select(mi => (mi.GetCustomAttribute<ColumnAttribute>()?.Name) ?? mi.Name))
+            {
                 queryBuilder.AppendLine($"{preffix} \tBase.{fieldName} = Query.{fieldName}");
                 preffix = "AND";
-                }
+            }
+
 
             //Retrieving parameters of internal Object Query
             ObjectQuery<T> objectQuery = queryable.GetObjectQuery();
+            //todo:
+            if (objectQuery.MergeOption ==MergeOption.NoTracking)
+                {
+                    Console.WriteLine("NO REFRESH NEEDED");
+                }
             var command = new SqlCommand(queryBuilder.ToString());
 
             foreach (ObjectParameter parameter in objectQuery.Parameters)
@@ -125,13 +127,12 @@ namespace Ralevex.EF.Extensions
             queryBuilder.AppendLine($"FROM {tableName} Base ");
             queryBuilder.AppendLine("INNER JOIN Query ");
 
-            var preffix = "ON";
-            foreach (MemberInfo oneFieldType in ReflectionFunctions.GetKeyColumnsForType(queryable.ElementType))
-                {
-                var columnAttribute = oneFieldType.GetCustomAttribute<ColumnAttribute>();
-                string fieldName = columnAttribute?.Name ?? oneFieldType.Name;
-                queryBuilder.AppendLine($"{preffix} \tBase.{fieldName} = Query.{fieldName}");
 
+            var preffix = "ON";
+            foreach (string fieldName in elementType.GetKeyColumnsForType()
+                                                    .Select(mi => (mi.GetCustomAttribute<ColumnAttribute>()?.Name) ?? mi.Name))
+                {
+                queryBuilder.AppendLine($"{preffix} \tBase.{fieldName} = Query.{fieldName}");
                 preffix = "AND";
                 }
 
@@ -162,14 +163,15 @@ namespace Ralevex.EF.Extensions
             return dbContext.Database.ExecuteSqlCommand(queryBuilder.ToString(), parametersArray);
 
             }
-        private static DbContext GetDbContext<T>(this IQueryable<T> queryable) where T : class
+
+        public static DbContext GetDbContext<T>(this IQueryable<T> queryable) where T : class
             {
             DbContext dbContext;
             try
                 {
                 object internalQuery = ReflectionFunctions.GetReflectedMember(queryable, "InternalQuery");
                 object internalContext = ReflectionFunctions.GetReflectedMember(internalQuery, "_internalContext");
-                dbContext = (DbContext) ReflectionFunctions.GetReflectedMember(internalContext, "Owner");
+                dbContext = (DbContext)ReflectionFunctions.GetReflectedMember(internalContext, "Owner");
                 }
             catch (Exception e)
                 {
@@ -184,6 +186,4 @@ namespace Ralevex.EF.Extensions
             return ReflectionFunctions.GetReflectedMember(internalQueryField, "_objectQuery") as ObjectQuery<T>;
             }
         }
-
-
     }

@@ -62,7 +62,7 @@ namespace Ralevex.EF
                 //                       BgSource = bgAsset.Data,
                 //                       IconSource = iconAsset.Data
                 //                       };
-                var oneSt = ctx.StudentsSet.First(s => s.LastName == "Grozniy");
+                var oneSt = ctx.StudentsSet.First(s => s.LastName == "Petrov");
 
                 var st = (from students in ctx.StudentsSet
                          join registrations in ctx.RegistrationsSet on students.StudentId equals registrations.StudentId
@@ -71,13 +71,7 @@ namespace Ralevex.EF
 
                 Console.WriteLine(st.ToTraceString());
 
-                //var st = ctx.StudentsSet.Where(s => s.LastName == "Rurik")
-                //                        .SelectMany(sr => sr.RegistrationsCollection)
-                //                        .AsNoTracking();
-                decimal sxc= new decimal();
-                    var number = 12345.67890M;
-
- 
+                Console.ReadLine();
              
 
 

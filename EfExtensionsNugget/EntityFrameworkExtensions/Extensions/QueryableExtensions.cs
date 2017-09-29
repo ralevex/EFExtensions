@@ -141,15 +141,18 @@ namespace Ralevex.EF.Extensions
             {
             ObjectQuery objectQuery = query.GetObjectQuery();
 
+            //unless we call ToTraceString() on objectQuery first
+            //objectQuery.Parameters is empty
+            string queryText = objectQuery.ToTraceString();
+
             var traceString = new StringBuilder();
 
-            traceString.AppendLine(objectQuery.ToTraceString());
-            traceString.AppendLine();
-
             foreach (ObjectParameter parameter in objectQuery.Parameters)
-                {
-                traceString.AppendLine(parameter.Name + " [" + parameter.ParameterType.FullName + "] = " + parameter.Value);
-                }
+                traceString.AppendLine(parameter.DeclareVariable());
+
+            traceString.AppendLine();
+            traceString.AppendLine(queryText);
+            traceString.AppendLine();
 
             return traceString.ToString();
             }

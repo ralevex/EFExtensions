@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity.Core.Objects;
 
-namespace Ralevex.EF
+namespace Ralevex.EF.Support
 {
     public static class TypeMapper
         {
@@ -45,9 +45,9 @@ namespace Ralevex.EF
                     [typeof(DateTimeOffset?)]   = DbType.DateTimeOffset,
                 };
 
-        internal static string DeclareVariable(ObjectParameter parameter)
+        internal static string DeclareVariable(this ObjectParameter parameter)
             {
-            var t = parameter.ParameterType.ToDbType();
+            DbType t = parameter.ParameterType.ToDbType();
             string declarePreffix = $"DECLARE @{parameter.Name}";
             switch (t)
                 {
@@ -95,13 +95,22 @@ namespace Ralevex.EF
                                        : $"{declarePreffix}  UNIQUEIDENTIFIER = '{g}';";
 
                 case DbType.DateTime:
+                    var d = (DateTime?)parameter.Value;
+                    return !d.HasValue ? $"{declarePreffix}  DATETIME2 = NULL;" 
+                                       : $"{declarePreffix}  DATETIME2 = '{d.Value:O}';";
+                        
                 case DbType.DateTimeOffset:
-
+                    var ofs = (DateTime?)parameter.Value;
+                    return !ofs.HasValue ? $"{declarePreffix}  datetimeoffset  = NULL;"
+                                         : $"{declarePreffix}  datetimeoffset  = '{ofs.Value:O}';";
 
                 case DbType.Binary:
-                        break;
+                    return $"{declarePreffix}  VARBINARY(1024) = 0x0;";
                 }
+
+                return $"{declarePreffix}  VARCHAR(1024) = {parameter.Value.ToString()};";
             }
+
         public static DbType ToDbType(this Type type)
             {
             return TypeMap.ContainsKey(type) ? TypeMap[type] : DbType.Object;

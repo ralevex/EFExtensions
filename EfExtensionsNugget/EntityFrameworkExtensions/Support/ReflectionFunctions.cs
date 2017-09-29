@@ -58,28 +58,7 @@ namespace Ralevex.EF.Support
 
             }
 
-        /// <summary>
-        /// For an Entity Framework IQueryable, returns the SQL and Parameters.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="query"></param>
-        /// <returns></returns>
-        public static string ToTraceString<T>(this IQueryable<T> query)
-            {
-            ObjectQuery<T> objectQuery = query.GetObjectQuery();
 
-            var traceString = new StringBuilder();
-
-            traceString.AppendLine(objectQuery.ToTraceString());
-            traceString.AppendLine();
-
-            foreach (ObjectParameter parameter in objectQuery.Parameters)
-                {
-                traceString.AppendLine(parameter.Name + " [" + parameter.ParameterType.FullName + "] = " + parameter.Value);
-                }
-
-            return traceString.ToString();
-            }
 
         public static IEnumerable<string> GetFieldNames(this Type elementType)
         {

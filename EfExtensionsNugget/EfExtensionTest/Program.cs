@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data;
 using System.Data.Entity;
+using System.Linq;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
@@ -42,29 +38,60 @@ namespace Ralevex.EF
         
         public static void Main()
             {
+            var rng= new Random();
             using (var ctx = new TestDbContext(ConnectionString))
                 {
 
-                var st = ctx.StudentsSet.Where(s => s.LastName == "Rurik")
-                                        .SelectMany(sr => sr.RegistrationsCollection);
+                //var carouselData = from carousel in ctx.LandingPageCarouselSet
+                //                   join page in ctx.LandingPageCarouselPageVariantSet
+                //                       on carousel.LandingPageCarouselPageId equals page.LandingPageCarouselPageId
+                //                   join bgAsset in ctx.LandingPageAssetSet
+                //                       on page.BackgroundAssetId equals bgAsset.LandingPageAssetId
+                //                   join iconAsset in ctx.LandingPageAssetSet
+                //                       on page.BrandIconAssetId equals iconAsset.LandingPageAssetId
+                //                   where carousel.LandingPageCarouselId == carouselId
+                //                   where page.LanguageId == languageid
+                //                   where page.ClientTypeId == 3
+                //                   orderby carousel.Position
+                //                   select new
+                //                       {
+                //                       Header = page.HeaderText,
+                //                       carousel.Position,
+                //                       Content = page.ContentText,
+                //                       PageId = page.LandingPageCarouselPageId,
+                //                       BgSource = bgAsset.Data,
+                //                       IconSource = iconAsset.Data
+                //                       };
+                var oneSt = ctx.StudentsSet.First(s => s.LastName == "Grozniy");
+
+                var st = (from students in ctx.StudentsSet
+                         join registrations in ctx.RegistrationsSet on students.StudentId equals registrations.StudentId
+                         where students.StudentId == oneSt.StudentId
+                         select registrations).AsNoTracking();
 
 
+
+                //var st = ctx.StudentsSet.Where(s => s.LastName == "Rurik")
+                //                        .SelectMany(sr => sr.RegistrationsCollection)
+                //                        .AsNoTracking();
 
 
                 Console.WriteLine("=========== Initial SELECT ==========");
                 st.ForEach(r => Console.WriteLine($"{r.CourseId} {r.StudentId} {r.RegistrationDate:d}"));
 
                 Console.WriteLine("=========== Performing UPDATE ==========");
-                st.Update(new { RegistrationDate = new DateTime(1925, 9, 20) });
-
-                Console.WriteLine("=========== ????? ==========");
-                var objectContext = ((IObjectContextAdapter)ctx).ObjectContext;
+                st.Update(new { RegistrationDate = new DateTime(rng.Next(1950,2000), rng.Next(1,13), rng.Next(1,28)) });
 
 
-                Console.WriteLine("=========== REFRESH ==========");
-                objectContext.Refresh(RefreshMode.StoreWins, st);
 
                 Console.WriteLine("=========== Secondary Enumeration ==========");
+                st.ForEach(r => Console.WriteLine($"{r.CourseId} {r.StudentId} {r.RegistrationDate:d}"));
+
+
+                Console.WriteLine("=========== Performing DELETE ==========");
+                st.Delete();
+
+                Console.WriteLine("=========== Third Enumeration ==========");
                 st.ForEach(r => Console.WriteLine($"{r.CourseId} {r.StudentId} {r.RegistrationDate:d}"));
                
                 }

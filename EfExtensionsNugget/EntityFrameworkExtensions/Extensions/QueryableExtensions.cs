@@ -1,24 +1,32 @@
 ﻿using System;
+using System.Text;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data;
-using System.Data.Entity;
-using System.Data.Entity.Core.Objects;
-using System.Data.Entity.Infrastructure;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
-using System.Text;
+using System.Data;
+using System.Data.Entity.Core.Objects;
+using System.Data.SqlClient;
 using Ralevex.EF.Support;
 
 namespace Ralevex.EF.Extensions
     {
-    public static class QueryableExtensions
+    public static partial class QueryableExtensions
         {
 
-        public static int Update<T>(this IQueryable<T> queryable,object parameters) where T : class
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="queryable"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public static int Update(this IQueryable queryable, object parameters)
             {
             Type elementType = queryable.ElementType;
+
+            if (elementType.IsConstructedGenericType)
+                throw new NotSupportedException("Provided query is not updatable");
+
             //Identify Entity target table name 
             var tableAttribute = elementType.GetCustomAttribute<TableAttribute>();
             string tableName = tableAttribute?.Name ?? elementType.Name;
@@ -60,34 +68,15 @@ namespace Ralevex.EF.Extensions
             var preffix = "ON";
             foreach (string fieldName in elementType.GetKeyColumnsForType()
                 .Select(mi => (mi.GetCustomAttribute<ColumnAttribute>()?.Name) ?? mi.Name))
-            {
+                {
                 queryBuilder.AppendLine($"{preffix} \tBase.{fieldName} = Query.{fieldName}");
                 preffix = "AND";
-            }
-
-
-            //Retrieving parameters of internal Object Query
-            ObjectQuery<T> objectQuery = queryable.GetObjectQuery();
-            //todo:
-            if (objectQuery.MergeOption ==MergeOption.NoTracking)
-                {
-                    Console.WriteLine("NO REFRESH NEEDED");
                 }
+
+
             var command = new SqlCommand(queryBuilder.ToString());
 
-            foreach (ObjectParameter parameter in objectQuery.Parameters)
-                {
-                if (parameter.ParameterType == typeof(byte[]))
-                    {
-                    var param = new SqlParameter(parameter.Name, SqlDbType.VarBinary) { Value = parameter.Value };
-                    command.Parameters.Add(param);
-                    }
-                else
-                    command.Parameters.AddWithValue(parameter.Name, parameter.Value);
-                }
-
-            //Set SqlParameter(s) for parametarized query
-            //  var command = new SqlCommand(queryBuilder.ToString());
+            //Set SqlParameter(s) for update
             foreach (PropertyInfo propertyInfo in fieldListInfo)
                 {
                 object val = propertyInfo.GetValue(parameters, null) ?? DBNull.Value;
@@ -99,21 +88,22 @@ namespace Ralevex.EF.Extensions
                 else
                     command.Parameters.AddWithValue(propertyInfo.Name, val);
                 }
-            //convert sql parameters to array of objects which is expected by ExecuteSqlCommand from EF
-            object[] parametersArray = command.Parameters.Cast<object>().ToArray();
 
-            // EF will attempt to add parameters in its own collectin and parameter object do not allow multiple parents
-            command.Parameters.Clear();
-
-            //Attempt to retreive DbContext from internal properties of EF IQueryable object
-            DbContext dbContext = queryable.GetDbContext();
-         
-            return dbContext.Database.ExecuteSqlCommand(command.CommandText, parametersArray);
+            return ExecuteSql(queryable, command);
 
             }
-        public static int Delete<T>(this IQueryable<T> queryable) where T : class
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="queryable"></param>
+        /// <returns></returns>
+        public static int Delete(this IQueryable queryable)
             {
             Type elementType = queryable.ElementType;
+
+            if (elementType.IsConstructedGenericType)
+                throw new NotSupportedException("Provided query is not updatable");
+
             //Identify Entity target table name 
             var tableAttribute = elementType.GetCustomAttribute<TableAttribute>();
             string tableName = tableAttribute?.Name ?? elementType.Name;
@@ -136,54 +126,33 @@ namespace Ralevex.EF.Extensions
                 preffix = "AND";
                 }
 
-            //Retrieving parameters of internal Object Query
-            ObjectQuery<T> objectQuery = queryable.GetObjectQuery();
             var command = new SqlCommand(queryBuilder.ToString());
+
+            return ExecuteSql(queryable, command);
+
+            }
+
+        /// <summary>
+        /// For an Entity Framework IQueryable, returns the SQL and Parameters.
+        /// </summary>
+        /// <param name="query">IQueryable object</param>
+        /// <returns>printable SQL string with parameters</returns>
+        public static string ToTraceString(this IQueryable query)
+            {
+            ObjectQuery objectQuery = query.GetObjectQuery();
+
+            var traceString = new StringBuilder();
+
+            traceString.AppendLine(objectQuery.ToTraceString());
+            traceString.AppendLine();
 
             foreach (ObjectParameter parameter in objectQuery.Parameters)
                 {
-                if (parameter.ParameterType == typeof(byte[]))
-                    {
-                    var param = new SqlParameter(parameter.Name, SqlDbType.VarBinary) { Value = parameter.Value };
-                    command.Parameters.Add(param);
-                    }
-                else
-                    command.Parameters.AddWithValue(parameter.Name, parameter.Value);
+                traceString.AppendLine(parameter.Name + " [" + parameter.ParameterType.FullName + "] = " + parameter.Value);
                 }
 
-        
-            //convert sql parameters to array of objects which is expected by ExecuteSqlCommand from EF
-            object[] parametersArray = command.Parameters.Cast<object>().ToArray();
-
-            // EF will attempt to add parameters in its own collectin and parameter object do not allow multiple parents
-            command.Parameters.Clear();
-            //Attempt to retreive DbContext from internal properties of EF IQueryable object
-            DbContext dbContext = queryable.GetDbContext();
-
-            return dbContext.Database.ExecuteSqlCommand(queryBuilder.ToString(), parametersArray);
-
+            return traceString.ToString();
             }
 
-        public static DbContext GetDbContext<T>(this IQueryable<T> queryable) where T : class
-            {
-            DbContext dbContext;
-            try
-                {
-                object internalQuery = ReflectionFunctions.GetReflectedMember(queryable, "InternalQuery");
-                object internalContext = ReflectionFunctions.GetReflectedMember(internalQuery, "_internalContext");
-                dbContext = (DbContext)ReflectionFunctions.GetReflectedMember(internalContext, "Owner");
-                }
-            catch (Exception e)
-                {
-                throw new ApplicationException("Unable to retreive db context from IQueryable", e);
-                }
-            return dbContext;
-            }
-
-        internal static ObjectQuery<T> GetObjectQuery<T>(this IQueryable<T> query)
-            {
-            object internalQueryField = ReflectionFunctions.GetReflectedMember(query, "_internalQuery");
-            return ReflectionFunctions.GetReflectedMember(internalQueryField, "_objectQuery") as ObjectQuery<T>;
-            }
         }
     }

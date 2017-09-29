@@ -69,11 +69,16 @@ namespace Ralevex.EF
                          where students.StudentId == oneSt.StudentId
                          select registrations).AsNoTracking();
 
-
+                Console.WriteLine(st.ToTraceString());
 
                 //var st = ctx.StudentsSet.Where(s => s.LastName == "Rurik")
                 //                        .SelectMany(sr => sr.RegistrationsCollection)
                 //                        .AsNoTracking();
+                decimal sxc= new decimal();
+                    var number = 12345.67890M;
+
+ 
+             
 
 
                 Console.WriteLine("=========== Initial SELECT ==========");

@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Data.Entity;
 using System.Linq;
-using System.Data.Entity.Core.Objects;
-using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.IO;
-using Ralevex.EF.Data;
 using Ralevex.EF.Extensions;
 
 namespace Ralevex.EF
@@ -73,7 +70,7 @@ namespace Ralevex.EF
 
                 Console.ReadLine();
              
-
+                
 
                 Console.WriteLine("=========== Initial SELECT ==========");
                 st.ForEach(r => Console.WriteLine($"{r.CourseId} {r.StudentId} {r.RegistrationDate:d}"));

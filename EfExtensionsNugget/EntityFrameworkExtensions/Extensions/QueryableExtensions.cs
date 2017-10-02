@@ -15,11 +15,11 @@ namespace Ralevex.EF.Extensions
         {
 
         /// <summary>
-        /// 
+        /// Construct and execute UPDATE on IQueryable object, with values specified via anonymous type.
         /// </summary>
-        /// <param name="queryable"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
+        /// <param name="queryable"><see cref="T:System.Linq.IQueryable`1" /></param>
+        /// <param name="parameters">Anonymous Type with values for update</param>
+        /// <returns>number of affected rows</returns>
         public static int Update(this IQueryable queryable, object parameters)
             {
             Type elementType = queryable.ElementType;
@@ -92,11 +92,12 @@ namespace Ralevex.EF.Extensions
             return ExecuteSql(queryable, command);
 
             }
+
         /// <summary>
-        /// 
+        /// Construct and execute DELETE on IQueryable object.
         /// </summary>
-        /// <param name="queryable"></param>
-        /// <returns></returns>
+        /// <param name="queryable"><see cref="T:System.Linq.IQueryable`1" /></param>
+        /// <returns>number of affected rows</returns>
         public static int Delete(this IQueryable queryable)
             {
             Type elementType = queryable.ElementType;

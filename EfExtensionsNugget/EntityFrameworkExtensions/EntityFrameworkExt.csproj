@@ -3,14 +3,14 @@
     <TargetFrameworks>net452;net46</TargetFrameworks>
     <Authors>Alex Zarenin, Anatoliy Belugin</Authors>
     <Company>Ralevex LTD.</Company>
-    <Description>EF Extentions to provide Update for complex queries</Description>
+    <Description>A set of extensions for entity framework classess providing useful functionality, such as update or delete methods for EF Queries, as well as some utility extensions.</Description>
     <AssemblyVersion>1.1.0.0</AssemblyVersion>
     <FileVersion>1.1.0.0</FileVersion>
-    <Version>1.1.0-beta</Version>
+    <Version>1.1.0-rc</Version>
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageId>EntityFramework.UpdateDeleteExtensions</PackageId>
+    <PackageId>Ralevex.EF.UpdateDeleteExtensions</PackageId>
     <PackageVersion>1.1.0</PackageVersion>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageTags>EF EntityFramework Extentions Update Delete</PackageTags>
@@ -18,6 +18,7 @@
     <PackageProjectUrl />
     <RootNamespace>Ralevex.EF</RootNamespace>
     <AssemblyName>Ralevex.EF.Extensions</AssemblyName>
+    <PackageReleaseNotes>Distibuted under the Open Source MIT License – look at it or use it at your own discretion WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,6 +30,12 @@
 
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="License.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 

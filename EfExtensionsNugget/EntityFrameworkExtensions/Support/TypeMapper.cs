@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity.Core.Objects;
+using System.Text;
 
 namespace Ralevex.EF.Support
 {
@@ -105,7 +106,13 @@ namespace Ralevex.EF.Support
                                          : $"{declarePreffix}  datetimeoffset  = '{ofs.Value:O}';";
 
                 case DbType.Binary:
-                    return $"{declarePreffix}  VARBINARY(1024) = 0x0;";
+                    if (parameter.Value == null)
+                        return $"{declarePreffix}  VARBINARY(1) = NULL;";
+                    else
+                    {
+                        var dta = ((byte[])parameter.Value);
+                        return $"{declarePreffix}  VARBINARY({dta.Length}) = {dta.ToHexString()};";
+                    }
                 }
 
                 return $"{declarePreffix}  VARCHAR(1024) = {parameter.Value.ToString()};";
@@ -114,6 +121,15 @@ namespace Ralevex.EF.Support
         public static DbType ToDbType(this Type type)
             {
             return TypeMap.ContainsKey(type) ? TypeMap[type] : DbType.Object;
+            }
+
+        internal static string ToHexString(this byte[] ba)
+            {
+            var hex = new StringBuilder(ba.Length * 2 + 2);
+            hex.Append("0x");
+            foreach (byte b in ba)
+                hex.AppendFormat("{0:x2}", b);
+            return hex.ToString();
             }
         }
     }

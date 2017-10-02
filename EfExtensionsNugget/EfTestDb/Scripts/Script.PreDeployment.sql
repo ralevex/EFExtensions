@@ -1,5 +1,5 @@
-﻿DELETE FROM Registrations;
-DELETE FROM Courses;
-DELETE FROM Students;
+﻿DROP TABLE IF EXISTS Registrations;
+DROP TABLE IF EXISTS Courses;
+DROP TABLE IF EXISTS Students;
 GO
 

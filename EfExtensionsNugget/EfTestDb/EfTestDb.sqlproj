@@ -63,6 +63,7 @@
     <Folder Include="Scripts" />
     <Folder Include="Publish" />
     <Folder Include="Database" />
+    <Folder Include="Queries" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\Students.sql" />
@@ -71,9 +72,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="SchemaCompare\SchemaCompare.LocalDb.scmp" />
-    <None Include="EfTestDb.publish.xml" />
     <None Include="Publish\EfTestDb.publish.xml" />
-    <None Include="Database\EFTestLdb_data.mdf" />
+    <None Include="Database\EFTestDb_data.mdf" />
+    <None Include="Publish\EfTestDb.publish.xml" />
+    <None Include="Queries\Students Registrations.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\Script.PreDeployment.sql" />

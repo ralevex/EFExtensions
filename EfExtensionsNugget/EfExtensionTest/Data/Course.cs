@@ -10,13 +10,9 @@ namespace Ralevex.EF.Data
         {
         [Column("CourseId", Order = 1), Key]
         public Guid CourseId { get; set; }
-
         [Column("CourseName"), Required, MaxLength(64)]
         public string CourseName { get; set; }
-
         [InverseProperty(nameof(Registration.CourseObject))]
         public virtual ICollection<Registration> RegistrationsCollection { get; set; }
-
-      //  public virtual ICollection<Student> StudentCollection { get; set; }
         }
     }
